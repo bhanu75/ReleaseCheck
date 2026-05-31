@@ -1,0 +1,39 @@
+# docker-compose.yml
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: releasecheck
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: ./backend
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/releasecheck
+      PORT: 4000
+
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_URL: http://localhost:4000
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
